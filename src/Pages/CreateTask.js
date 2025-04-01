@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Grid } from "@mui/material";
+import { Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import CreateTaskForm from "../Components/CreateTaskForm";
 import SubTasksAccordian from "../CustomComponents/SubTasksAccordian";
 import { db } from "../firebase";
@@ -17,7 +17,7 @@ const CreateTask = ({ tasks, setTasks, subjectsList }) => {
     description: "",
     fromdate: new Date().toLocaleDateString(),
     todate: new Date().toLocaleDateString(),
-    id: null, // Set to null instead of an empty string
+    id: null,
   });
 
   const addTaskToDb = async () => {
@@ -34,8 +34,6 @@ const CreateTask = ({ tasks, setTasks, subjectsList }) => {
       console.log("Task added to Firestore with ID:", docRef.id);
       
       setTasks([...tasks, { id: docRef.id, ...taskData }]);
-
-      // Reset task state
       setTask({
         uid: "aab55780-6e20-11ec-9569-0ef4b0d5e5d1",
         completed: false,
@@ -46,9 +44,8 @@ const CreateTask = ({ tasks, setTasks, subjectsList }) => {
         description: "",
         fromdate: new Date().toLocaleDateString(),
         todate: new Date().toLocaleDateString(),
-        id: null, // Ensure new tasks start fresh
+        id: null,
       });
-
       setSubTasks([]);
     } catch (error) {
       console.error("Error adding task:", error);
@@ -77,6 +74,43 @@ const CreateTask = ({ tasks, setTasks, subjectsList }) => {
         </Grid>
         <Grid item md={10} xs={12} sx={{ width: "90vw" }}>
           <SubTasksAccordian subTasks={subTasks} setSubTasks={setSubTasks} />
+        </Grid>
+        <Grid item md={10} xs={12} sx={{ width: "90vw", mt: 4 }}>
+          <h3>Created Tasks</h3>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="created tasks table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Task</TableCell>
+                  <TableCell>Subject</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>From Date</TableCell>
+                  <TableCell>To Date</TableCell>
+                  <TableCell>Progress (%)</TableCell>
+                  <TableCell>Subtasks</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+  {tasks && tasks.length > 0 ? (
+    tasks.map((t) => (
+      <TableRow key={t.id}>
+        <TableCell>{t.task || "Unnamed"}</TableCell>
+        <TableCell>{t.subject || "N/A"}</TableCell>
+        <TableCell>{t.description || "No description"}</TableCell>
+        <TableCell>{t.fromdate || "N/A"}</TableCell>
+        <TableCell>{t.todate || "N/A"}</TableCell>
+        <TableCell>{t.percentComp ?? 0}</TableCell>
+        <TableCell>{t.subTasks?.length || 0}</TableCell>
+      </TableRow>
+    ))
+  ) : (
+    <TableRow>
+      <TableCell colSpan={7}>No tasks available</TableCell>
+    </TableRow>
+  )}
+</TableBody>
+            </Table>
+          </TableContainer>
         </Grid>
       </Grid>
     </div>

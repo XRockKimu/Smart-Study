@@ -9,6 +9,7 @@ const ManageTaskCard = (props) => {
   useEffect(() => {
     setTask(props.taskData);
   }, [props.taskData]);
+
   return (
     task && (
       <Box
@@ -26,8 +27,12 @@ const ManageTaskCard = (props) => {
           },
         }}
       >
-        <Typography variant="h5">Task :- {task.task}</Typography>
-        <Typography variant="h6">Subject:- {task.subject}</Typography>
+        <Typography variant="h5">
+          <Task sx={{ mr: 1 }} /> Task: {task.task || "Unnamed"}
+        </Typography>
+        <Typography variant="h6">Subject: {task.subject || "N/A"}</Typography>
+        <Typography variant="body2">Progress: {task.percentComp ?? 0}%</Typography>
+        <Typography variant="body2">Subtasks: {task.subTasks?.length || 0}</Typography>
       </Box>
     )
   );
