@@ -13,6 +13,7 @@ export default function BasicEditingGrid() {
   );
 }
 
+
 const columns = [
   { field: "name", headerName: "Name", minWidth: 200, editable: true, flex: 1 },
   { field: "age", headerName: "Age", type: "number", editable: true, flex: 1 },

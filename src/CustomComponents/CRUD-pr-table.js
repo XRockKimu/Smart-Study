@@ -22,6 +22,7 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
     completed: false,
   };
 
+  
   const [stDialog, setStDialog] = useState(false);
   const [deleteStDialog, setDeleteStDialog] = useState(false);
   const [deleteStsDialog, setDeleteStsDialog] = useState(false);

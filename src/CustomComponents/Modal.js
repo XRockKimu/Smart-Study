@@ -9,6 +9,7 @@ export default function BasicModal() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  
   return (
     <div>
       <Button onClick={handleOpen}>Open modal</Button>

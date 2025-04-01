@@ -37,4 +37,5 @@ export default function MediaControlCard(props) {
       </Box>
     </Card>
   );
+  
 }

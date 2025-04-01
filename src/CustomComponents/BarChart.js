@@ -25,6 +25,7 @@ const BarChart = () => {
             interval: 0,
           },
         },
+        
         chart: {
           title: "Company Performance",
           subtitle: "Sales, Expenses, and Profit: 2014-2017",
