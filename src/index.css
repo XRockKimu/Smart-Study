@@ -11,3 +11,23 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.accordion {
+  width: 100%;
+  max-width: 600px;
+}
+.accordion-item {
+  border: 1px solid #ddd;
+  margin-bottom: 8px;
+}
+.accordion-title {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+}
+.accordion-content {
+  padding: 12px;
+  background-color: #fff;
+}

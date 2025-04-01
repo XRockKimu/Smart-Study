@@ -1,26 +1,22 @@
-//envoronment variables
-// REACT_APP_BASE_URL_GET= "http://localhost:3000/get/"
-//REACT_APP_BASE_URL_POST="http://localhost:3000/post/"
-
 import "./App.css";
-import { darkTheme } from "./Theme.js";
+import { darkTheme, lightTheme } from "./Theme.js";
 import { ThemeProvider } from "@mui/material/styles";
 import { makeStyles } from "@mui/styles";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { db } from "./firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 
 import Navbar from "./CustomComponents/NavBar";
 import ArchivedTask from "./Pages/ArchivedTasks";
 import PredefinedTask from "./Pages/PredefinedTasks";
 import CreateNewTask from "./Pages/CreateTask";
 import CalenderView from "./Components/CalenderView";
-//import EditableTable from "./CustomComponents/EditableTable";
 import { Box } from "@mui/system";
-
-//All pages for routes
 import ManageTask from "./Pages/ManageTask";
 import AllTask from "./Pages/AllTask";
 import Dashboard from "./Pages/Dashboard";
-import NewSubject from "./Pages/CreateSubject";
+import NewSubject from "./Components/CreateNewSubject";
 import ErrorPage from "./Pages/404";
 import ManageSubTask from "./Pages/ManageSubTask";
 
@@ -29,58 +25,86 @@ const useStyles = makeStyles({
     display: "flex",
     paddingRight: "0px",
   },
-  rightBody: {},
 });
 
 function App() {
   const classes = useStyles();
+  const [tasks, setTasks] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  useEffect(() => {
+    const unsubscribeTasks = onSnapshot(
+      collection(db, "tasks"),
+      (snapshot) => {
+        const taskList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTasks(taskList);
+        console.log("Tasks updated:", taskList);
+      },
+      (error) => console.error("Tasks error:", error)
+    );
+
+    const unsubscribeSubjects = onSnapshot(
+      collection(db, "subjects"),
+      (snapshot) => {
+        const subjectList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setSubjects(subjectList);
+        console.log("Subjects updated:", subjectList);
+      },
+      (error) => console.error("Subjects error:", error)
+    );
+
+    return () => {
+      unsubscribeTasks();
+      unsubscribeSubjects();
+    };
+  }, []);
 
   return (
     <div className="App">
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
         <Router>
           <div className={classes.root}>
-            <Navbar />
-
-            {/* A <Switch> looks through its children <Route>s and
-            renders the first one that matches the current URL. */}
-
+            <Navbar setIsDarkMode={setIsDarkMode} isDarkMode={isDarkMode} />
             <Box sx={{ flexGrow: 1, p: 3 }}>
-              <Switch fullwidth>
+              <Switch>
                 <Route path="/dashboard">
-                  <Dashboard />
+                  <Dashboard tasks={tasks} />
                 </Route>
                 <Route path="/archived">
-                  <ArchivedTask />
+                  <ArchivedTask tasks={tasks} />
                 </Route>
                 <Route path="/newsub">
-                  <NewSubject />
+                  <NewSubject subjects={subjects} setSubjects={setSubjects} />
                 </Route>
                 <Route path="/predefined">
                   <PredefinedTask />
                 </Route>
                 <Route path="/createnewtask">
-                  <CreateNewTask />
+                  <CreateNewTask setTasks={setTasks} tasks={tasks} subjectsList={subjects} />
                 </Route>
                 <Route path="/managetask">
-                  <ManageTask />
+                  <ManageTask tasks={tasks} />
                 </Route>
                 <Route path="/alltask">
-                  <AllTask />
+                  <AllTask tasks={tasks} />
                 </Route>
-
                 <Route path="/calender">
                   <div style={{ width: "80%" }}>
-                    <CalenderView />
+                    <CalenderView tasks={tasks} />
                   </div>
                 </Route>
-
                 <Route path="/managesubtask">
                   <div style={{ width: "80%" }}>
-                    <ManageSubTask />
+                    <ManageSubTask tasks={tasks} />
                   </div>
                 </Route>
-
                 <Route path="*">
                   <ErrorPage />
                 </Route>

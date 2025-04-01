@@ -1,36 +1,40 @@
 import Card from "../CustomComponents/TaskCard";
-import { Grid } from "@mui/material";
+import { Grid, Box } from "@mui/material";
 import CardPanTask from "../Components/SideDrawerTask";
 import { useState, useEffect } from "react";
 
-import { Box } from "@mui/material";
 const AllTasks = () => {
   const [opener, setOpener] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [allData, setAllData] = useState("");
+  const [allData, setAllData] = useState([]); // ✅ FIXED: Use an empty array to prevent errors
 
   useEffect(() => {
-    fetch(process.env.REACT_APP_BASE_URL_GET + "/alltask")
-      .then((res) => res.json())
-      .then((dataX) => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BASE_URL_GET}/alltask`);
+        if (!response.ok) throw new Error("Failed to fetch tasks");
+        const dataX = await response.json();
         setAllData(dataX);
-      });
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    };
+    
+    fetchTasks();
   }, []);
 
   const openDrawer = (data) => {
-    setOpener(true);
-    // console.log(data);
     setSelectedTask(data);
-    console.log(opener);
+    setOpener(true);
   };
 
   const closeDrawer = () => {
     setOpener(false);
-    console.log(opener);
   };
 
   return (
     <div>
+      {/* Side Panel for Task Details */}
       <Box
         sx={{
           width: opener ? "90%" : 0,
@@ -48,47 +52,20 @@ const AllTasks = () => {
       >
         <CardPanTask closePanel={closeDrawer} taskData={selectedTask} />
       </Box>
+
+      {/* Task List Grid */}
       <Grid container spacing={2}>
-        {
-          /* {[
-          {
-            task: "1st Task",
-            subject: "1st Subject",
-            fromdate: "2022-02-10",
-            todate: "2022-04-22",
-            desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
-          },
-          {
-            task: "2nd task",
-            subject: "2nd subject",
-            fromdate: "2022-03-01",
-            todate: "2022-03-01",
-            desc: "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
-          },
-          {
-            task: "some task",
-            subject: "1st Subject",
-            fromdate: "2022-03-10",
-            todate: "2022-03-19",
-            desc: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
-          },
-          {
-            task: "some task",
-            subject: "1st Subject",
-            fromdate: "2022-03-10",
-            todate: "2022-03-19",
-            desc: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
-          },
-        ]*/
-          allData &&
-            allData.map((selectedRow) => (
-              <Grid item md={4} sm={8} xs={12}>
-                <div onClick={() => openDrawer(selectedRow)}>
-                  <Card taskData={selectedRow} />
-                </div>
-              </Grid>
-            ))
-        }
+        {allData.length > 0 ? (
+          allData.map((selectedRow) => (
+            <Grid item md={4} sm={8} xs={12} key={selectedRow.id || Math.random()}>
+              <Card taskData={selectedRow} onClick={() => openDrawer(selectedRow)} />
+            </Grid>
+          ))
+        ) : (
+          <Grid item xs={12}>
+            <p style={{ textAlign: "center", color: "gray" }}>No tasks available</p>
+          </Grid>
+        )}
       </Grid>
     </div>
   );

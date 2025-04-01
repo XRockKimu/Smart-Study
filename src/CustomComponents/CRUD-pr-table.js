@@ -8,17 +8,11 @@ import { FileUpload } from "primereact/fileupload";
 import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { Checkbox } from "primereact/checkbox";
-
 import { InputSwitch } from "primereact/inputswitch";
-
 import "../CSS/DataTableDemo.css";
-
-//import uuid npm library
 import { v4 as uuidv4 } from "uuid";
 
 const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
-  //creating subtask object for new subtask
   let emptySubTask = {
     subtaskid: "",
     taskid: "",
@@ -28,7 +22,6 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
     completed: false,
   };
 
-  //All states and refs
   const [stDialog, setStDialog] = useState(false);
   const [deleteStDialog, setDeleteStDialog] = useState(false);
   const [deleteStsDialog, setDeleteStsDialog] = useState(false);
@@ -39,7 +32,7 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
   const toast = useRef(null);
   const dt = useRef(null);
 
-  //function for edit popup to open
+  console.log("SubTaskTable rendered, subTasks:", subTasks);
 
   const editSubTask = (subTaskRow) => {
     setSubTask({ ...subTaskRow });
@@ -52,23 +45,12 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
   };
 
   const statusBodyTemplate = (rowData) => {
-    if (rowData.completed)
-      return (
-        <i
-          className="pi pi-check-circle"
-          style={{ color: "green", fontSize: "1.3rem" }}
-        ></i>
-      );
-    else
-      return (
-        <i
-          className="pi pi-times-circle"
-          style={{ color: "red", fontSize: "1.3rem" }}
-        ></i>
-      );
+    return rowData.completed ? (
+      <i className="pi pi-check-circle" style={{ color: "green", fontSize: "1.3rem" }}></i>
+    ) : (
+      <i className="pi pi-times-circle" style={{ color: "red", fontSize: "1.3rem" }}></i>
+    );
   };
-
-  //header for datatable
 
   const header = (
     <div className="table-header">
@@ -90,6 +72,7 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
   };
 
   const saveSubTask = async () => {
+    console.log("saveSubTask called, subTask:", subTask);
     setSubmitted(true);
 
     if (subTask.subtask.trim()) {
@@ -98,7 +81,6 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
 
       if (subTask.subtaskid) {
         const index = await findIndexById(subTask.subtaskid);
-
         _sts[index] = _subTask;
         toast.current.show({
           severity: "success",
@@ -108,7 +90,6 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
         });
       } else {
         _subTask.subtaskid = await createId();
-
         _sts.push(_subTask);
         toast.current.show({
           severity: "success",
@@ -134,11 +115,10 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
     setSubTasks(_sts);
     setDeleteStsDialog(false);
     setSelectedSubTasks(null);
-
     toast.current.show({
       severity: "success",
       summary: "Successful",
-      detail: "Products Deleted",
+      detail: "SubTasks Deleted",
       life: 3000,
     });
   };
@@ -151,13 +131,11 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
         break;
       }
     }
-
     return index;
   };
 
   const createId = () => {
-    let myuuid = uuidv4();
-    return myuuid;
+    return uuidv4();
   };
 
   const openNew = () => {
@@ -174,7 +152,6 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
     const val = (e.target && e.target.value) || "";
     let _subTask = { ...subTask };
     _subTask[`${name}`] = val;
-
     setSubTask(_subTask);
   };
 
@@ -182,7 +159,6 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
     const val = e.value;
     let _subTask = { ...subTask };
     _subTask[`${name}`] = val;
-
     setSubTask(_subTask);
   };
 
@@ -192,33 +168,22 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
     reader.onload = (e) => {
       const csv = e.target.result;
       const data = csv.split("\n");
-
-      // Prepare DataTable
       const cols = data[0].replace(/['"]+/g, "").split(",");
       data.shift();
 
       const importedData = data.map((d) => {
         d = d.split(",");
-
         const thisRow = {};
-
         cols.forEach((col, index) => {
           thisRow[col] = d[index];
         });
-
         thisRow.subtaskid = createId();
-
-        thisRow["completed"] = thisRow["completed"] === "true" ? true : false;
-
-        console.log(thisRow);
+        thisRow["completed"] = thisRow["completed"] === "true";
         return thisRow;
       });
 
-      const _subTasks = [...subTasks, ...importedData];
-
-      setSubTasks(_subTasks);
+      setSubTasks([...subTasks, ...importedData]);
     };
-
     reader.readAsText(file, "UTF-8");
   };
 
@@ -242,20 +207,19 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
   const exportCSV = () => {
     dt.current.exportCSV();
   };
-  //action body teemplate for edit and delete in datatable
 
   const actionBodyTemplate = (rowData) => {
     return (
       <React.Fragment>
         <Button
           icon="pi pi-pencil"
-          className="p-button-rounded p-button-success "
+          className="p-button-rounded p-button-success"
           style={{ margin: "0.7rem" }}
           onClick={() => editSubTask(rowData)}
         />
         <Button
           icon="pi pi-trash"
-          className="p-button-rounded p-button-danger "
+          className="p-button-rounded p-button-danger"
           style={{ margin: "0.7rem" }}
           onClick={() => confirmDeleteSubTask(rowData)}
         />
@@ -354,7 +318,7 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
         <Button
           label="Export"
           icon="pi pi-upload"
-          className="p-button-help  exportCsvBtn"
+          className="p-button-help exportCsvBtn"
           style={{ margin: "1.5rem" }}
           onClick={exportCSV}
         />
@@ -370,60 +334,41 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
           style={{ marginBottom: "1rem", backgroundColor: "#273A50" }}
           left={leftToolbarTemplate}
           right={rightToolbarTemplate}
-        ></Toolbar>
-
+        />
         <DataTable
           ref={dt}
-          value={subTasks || null}
+          value={subTasks || []} // Default to empty array if null
           selection={selectedSubTasks}
           onSelectionChange={(e) => setSelectedSubTasks(e.value)}
-          dataKey="subtask"
+          dataKey="subtaskid" // Changed to unique subtaskid
           paginator
           rows={10}
           rowsPerPageOptions={[5, 10, 25]}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} subtasks"
           globalFilter={globalFilter}
           header={header}
           responsiveLayout="scroll"
           style={{ color: "#273A50" }}
         >
-          <Column
-            selectionMode="multiple"
-            headerStyle={{ width: "3rem" }}
-            exportable={false}
-          ></Column>
-          <Column
-            field="subtask"
-            header="SubTask"
-            style={{ minWidth: "12rem" }}
-          ></Column>
-          <Column
-            field="desc"
-            header="Description"
-            sortable
-            style={{ minWidth: "16rem" }}
-          ></Column>
-          <Column field="link" header="Link"></Column>
+          <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} exportable={false} />
+          <Column field="subtask" header="SubTask" style={{ minWidth: "12rem" }} />
+          <Column field="desc" header="Description" sortable style={{ minWidth: "16rem" }} />
+          <Column field="link" header="Link" />
           <Column
             field="completed"
             header="Completed"
             body={statusBodyTemplate}
             sortable
             style={{ minWidth: "8rem" }}
-          ></Column>
-          <Column
-            body={actionBodyTemplate}
-            exportable={false}
-            style={{ minWidth: "8rem" }}
-          ></Column>
+          />
+          <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: "8rem" }} />
         </DataTable>
       </div>
 
       <Dialog
         visible={stDialog}
-        zIndex={500000}
-        style={{ width: "450px", zIndex: 5000 }}
+        style={{ width: "450px" }}
         header="SubTask Details"
         modal
         className="p-fluid"
@@ -438,39 +383,28 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
             onChange={(e) => onInputChange(e, "subtask")}
             required
             autoFocus
-            className={classNames({
-              "p-invalid": submitted && !subTask.subtask,
-            })}
+            className={classNames({ "p-invalid": submitted && !subTask.subtask })}
           />
-          {submitted && !subTask.subtask && (
-            <small className="p-error">SubTask is required.</small>
-          )}
+          {submitted && !subTask.subtask && <small className="p-error">SubTask is required.</small>}
         </div>
-
         <div className="field">
           <label htmlFor="Description">Description</label>
           <InputText
-            id="
-              description"
+            id="description"
             value={subTask.desc}
             onChange={(e) => onInputChange(e, "desc")}
-            autoFocus
           />
         </div>
-
         <div className="field">
           <label htmlFor="Link">URL</label>
           <InputText
-            id="
-              link"
+            id="link"
             value={subTask.link}
             onChange={(e) => onInputChange(e, "link")}
-            autoFocus
           />
         </div>
-
         <div className="field">
-          <h5>Completed </h5>
+          <h5>Completed</h5>
           <InputSwitch
             checked={subTask.completed}
             onChange={(e) => onToggleChange(e, "completed")}
@@ -480,61 +414,29 @@ const DataTableCrudDemo = ({ subTasks, setSubTasks }) => {
 
       <Dialog
         visible={deleteStDialog}
-        zIndex={5000}
-        style={{ width: "450px", zIndex: 5000 }}
+        style={{ width: "450px" }}
         header="Confirm"
         modal
         footer={deleteStDialogFooter}
         onHide={hideDeleteStDialog}
       >
         <div className="confirmation-content">
-          <i
-            className="pi pi-exclamation-triangle mr-3"
-            style={{ fontSize: "2rem", margin: "2rem" }}
-          />
-          {subTask && (
-            <span>
-              Are you sure you want to delete <b>{subTask.subtask}</b>?
-            </span>
-          )}
+          <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem", margin: "2rem" }} />
+          {subTask && <span>Are you sure you want to delete <b>{subTask.subtask}</b>?</span>}
         </div>
       </Dialog>
 
       <Dialog
         visible={deleteStsDialog}
-        style={{ width: "450px", zIndex: 50000 }}
+        style={{ width: "450px" }}
         header="Confirm"
         modal
         footer={deleteStsDialogFooter}
         onHide={hideDeleteStsDialog}
       >
         <div className="confirmation-content">
-          <i
-            className="pi pi-exclamation-triangle mr-3"
-            style={{ fontSize: "2rem" }}
-          />
-          {subTask && (
-            <span>Are you sure you want to delete the selected products?</span>
-          )}
-        </div>
-      </Dialog>
-
-      <Dialog
-        visible={deleteStsDialog}
-        style={{ width: "450px", zIndex: 50000 }}
-        header="Confirm"
-        modal
-        footer={deleteStsDialogFooter}
-        onHide={hideDeleteStsDialog}
-      >
-        <div className="confirmation-content">
-          <i
-            className="pi pi-exclamation-triangle mr-3"
-            style={{ fontSize: "2rem" }}
-          />
-          {selectedSubTasks && (
-            <span>Are you sure you want to delete the selected products?</span>
-          )}
+          <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
+          {selectedSubTasks && <span>Are you sure you want to delete the selected subtasks?</span>}
         </div>
       </Dialog>
     </div>

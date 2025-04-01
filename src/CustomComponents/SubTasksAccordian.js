@@ -1,21 +1,33 @@
 import { useState } from "react";
 
-export default function ControlledAccordions() {
-  const [isActive, setIsActive] = useState(false);
+export default function SubTasksAccordian({ subTasks, setSubTasks }) {
+  const [activeIndex, setActiveIndex] = useState(null); // Tracks open accordion
 
   return (
     <div>
       <div className="accordion">
-        <div className="accordion-item">
-          <div
-            className="accordion-title"
-            onClick={() => setIsActive(!isActive)}
-          >
-            <div>{"title"}</div>
-            <div>{isActive ? "-" : "+"}</div>
-          </div>
-          {isActive && <div className="accordion-content">{"content"}</div>}
-        </div>
+        {subTasks.length > 0 ? (
+          subTasks.map((subTask, index) => (
+            <div className="accordion-item" key={index}>
+              <div
+                className="accordion-title"
+                onClick={() =>
+                  setActiveIndex(activeIndex === index ? null : index)
+                }
+              >
+                <div>{subTask.subtask || `Subtask ${index + 1}`}</div>
+                <div>{activeIndex === index ? "-" : "+"}</div>
+              </div>
+              {activeIndex === index && (
+                <div className="accordion-content">
+                  {subTask.desc || "No description"}
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <div>No subtasks available</div>
+        )}
       </div>
     </div>
   );

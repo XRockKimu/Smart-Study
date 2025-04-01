@@ -1,93 +1,59 @@
-import CreateTask from "../Components/CreateTaskForm";
-import EditableTable from "../CustomComponents/EditableTable";
-import SubTaskTable from "../CustomComponents/CRUD-pr-table";
+import React, { useState } from "react";
 import { Grid } from "@mui/material";
+import CreateTaskForm from "../Components/CreateTaskForm";
+import SubTasksAccordian from "../CustomComponents/SubTasksAccordian";
+import { db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
 
-import { useState, useEffect } from "react";
-
-const CreateNewTask = ({ tasksFromDb, subTasksListsFromDb }) => {
-  const [subjectsList, setSubjectsList] = useState(null);
-
+const CreateTask = ({ tasks, setTasks, subjectsList }) => {
   const [subTasks, setSubTasks] = useState([]);
   const [task, setTask] = useState({
     uid: "aab55780-6e20-11ec-9569-0ef4b0d5e5d1",
     completed: false,
-    precentComp: Math.random() * 100,
+    percentComp: 0,
     subject: "",
     subid: "",
     task: "",
     description: "",
-    fromdate: "",
-    todate: "",
+    fromdate: new Date().toLocaleDateString(),
+    todate: new Date().toLocaleDateString(),
+    id: null, // Set to null instead of an empty string
   });
-  useEffect(() => {
-    fetch(process.env.REACT_APP_BASE_URL_GET + "/allsubject")
-      .then((res) => res.json())
-      .then((dataX) => {
-        setSubjectsList(dataX);
-      });
-  }, []);
-
-  // useEffect(() => {
-  //   fetch(
-  //     "http://localhost:3000/get/subtask/34c8e55e-7312-426c-87b1-030beeb796b4"
-  //   )
-  //     .then((res) => res.json())
-  //     .then((dataX) => {
-  //       setSubTasks(dataX);
-  //     });
-  // }, []);
-
-  useEffect(() => {
-    if (tasksFromDb) {
-      setTask(tasksFromDb);
-    }
-
-    if (subTasksListsFromDb) {
-      setSubjectsList(subTasksListsFromDb);
-    }
-  }, []);
 
   const addTaskToDb = async () => {
-    console.log(task);
-    console.log(subTasks);
-    //data to be pushed on db
+    const taskData = {
+      ...task,
+      percentComp: subTasks.length
+        ? (subTasks.filter((st) => st.completed).length / subTasks.length) * 100
+        : 0,
+      subTasks,
+    };
 
-    const response = await fetch(
-      process.env.REACT_APP_BASE_URL_POST + "/newtask",
-      {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        mode: "cors", // no-cors, *cors, same-origin
-        headers: {
-          "Content-Type": "application/json",
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: JSON.stringify({
-          taskDets: task,
-          subTasks: subTasks,
-        }), // body data type must match "Content-Type" header
-      }
-    );
+    try {
+      const docRef = await addDoc(collection(db, "tasks"), taskData);
+      console.log("Task added to Firestore with ID:", docRef.id);
+      
+      setTasks([...tasks, { id: docRef.id, ...taskData }]);
 
-    await setEmptyTaskAndSubTask();
-    console.log(response);
-    return response;
-  };
+      // Reset task state
+      setTask({
+        uid: "aab55780-6e20-11ec-9569-0ef4b0d5e5d1",
+        completed: false,
+        percentComp: 0,
+        subject: "",
+        subid: "",
+        task: "",
+        description: "",
+        fromdate: new Date().toLocaleDateString(),
+        todate: new Date().toLocaleDateString(),
+        id: null, // Ensure new tasks start fresh
+      });
 
-  const setEmptyTaskAndSubTask = () => {
-    setTask({
-      uid: "",
-      completed: false,
-      precentComp: Math.random() * 100,
-      subject: "",
-      subid: "",
-      task: "",
-      description: "",
-      fromdate: "",
-      todate: "",
-    });
-
-    setSubTasks([]);
+      setSubTasks([]);
+    } catch (error) {
+      console.error("Error adding task:", error);
+      alert("Failed to add task. Please try again.");
+    }
   };
 
   return (
@@ -100,20 +66,21 @@ const CreateNewTask = ({ tasksFromDb, subTasksListsFromDb }) => {
         alignItems="center"
       >
         <Grid item md={10} xs={12}>
-          <CreateTask
+          <CreateTaskForm
             subjectsList={subjectsList}
             task={task}
             setTask={setTask}
             addTaskToDb={addTaskToDb}
+            DeleteTaskBtn={null}
+            manage={!!task.id}
           />
         </Grid>
-
         <Grid item md={10} xs={12} sx={{ width: "90vw" }}>
-          <SubTaskTable subTasks={subTasks} setSubTasks={setSubTasks} />
+          <SubTasksAccordian subTasks={subTasks} setSubTasks={setSubTasks} />
         </Grid>
       </Grid>
     </div>
   );
 };
 
-export default CreateNewTask;
+export default CreateTask;

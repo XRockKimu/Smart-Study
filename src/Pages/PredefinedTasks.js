@@ -1,12 +1,11 @@
 import Table from "../CustomComponents/CRUD-pr-table";
+import { Box } from "@mui/material";
 
 const PredefinedTask = () => {
   return (
-    <div>
-      <div style={{ display: "table", tableLayout: "fixed", width: "100%" }}>
-        <Table />
-      </div>
-    </div>
+    <Box sx={{ display: "table", tableLayout: "fixed", width: "100%" }}>
+      <Table />
+    </Box>
   );
 };
 
